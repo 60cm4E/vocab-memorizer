@@ -1266,7 +1266,7 @@
         matchState.totalPairs = 8;
         matchState.moves = 0;
         matchState.seconds = 0;
-        matchState.locked = false;
+        matchState.locked = true; // locked during preview
 
         document.getElementById('match-moves').textContent = '0';
         document.getElementById('match-pairs').textContent = '0';
@@ -1276,18 +1276,25 @@
         document.getElementById('match-complete').style.display = 'none';
         document.getElementById('match-grid').style.display = 'grid';
 
-        renderMatchGrid();
-        startMatchTimer();
+        renderMatchGrid(true); // start revealed
         showScreen('screen-matching');
+
+        // Preview: show all cards for 3 seconds, then flip them over
+        setTimeout(() => {
+            const allCards = document.querySelectorAll('#match-grid .match-card');
+            allCards.forEach(c => c.classList.remove('revealed'));
+            matchState.locked = false;
+            startMatchTimer();
+        }, 3000);
     }
 
-    function renderMatchGrid() {
+    function renderMatchGrid(startRevealed) {
         const grid = document.getElementById('match-grid');
         grid.innerHTML = '';
 
         matchState.cards.forEach((card, i) => {
             const el = document.createElement('div');
-            el.className = 'match-card';
+            el.className = 'match-card' + (startRevealed ? ' revealed' : '');
             el.dataset.index = i;
             el.innerHTML = `
                 <div class="match-card-inner">
