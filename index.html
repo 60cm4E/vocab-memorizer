@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중3 동아(윤정미) 3·4과 암기장</title>
+    <meta name="description" content="중3 동아(윤정미) 영어 3과, 4과 단어 및 문장 암기장 - 레드팀 & 빌드팀 학습">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Ambient background blobs -->
+    <div class="ambient-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div id="app">
+        <!-- ============ LANDING SCREEN ============ -->
+        <div id="screen-landing" class="screen active">
+            <div class="landing-container">
+                <div class="logo-area">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="4" y="8" width="28" height="36" rx="3" stroke="currentColor" stroke-width="2.5" fill="none"/>
+                            <rect x="16" y="4" width="28" height="36" rx="3" stroke="currentColor" stroke-width="2.5" fill="rgba(255,255,255,0.1)"/>
+                            <line x1="20" y1="14" x2="40" y2="14" stroke="currentColor" stroke-width="2" opacity="0.6"/>
+                            <line x1="20" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="2" opacity="0.4"/>
+                            <line x1="20" y1="26" x2="38" y2="26" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                        </svg>
+                    </div>
+                    <h1 class="app-title">Vocab<span class="highlight">Master</span></h1>
+                    <p class="app-subtitle">중3 동아(윤정미) · 3과 & 4과</p>
+                </div>
+
+                <div class="lesson-select-area">
+                    <h2 class="section-label">과 선택</h2>
+                    <div class="lesson-cards">
+                        <button class="lesson-card" data-lesson="3" id="btn-lesson3">
+                            <div class="lesson-number">3과</div>
+                            <div class="lesson-title">English Words of Foreign Origin</div>
+                            <div class="lesson-meta">단어 <span class="badge">54개</span> · 숙어 <span class="badge">12개</span> · 문장 <span class="badge">28개</span></div>
+                        </button>
+                        <button class="lesson-card" data-lesson="4" id="btn-lesson4">
+                            <div class="lesson-number">4과</div>
+                            <div class="lesson-title">Ask Dr. Money</div>
+                            <div class="lesson-meta">단어 <span class="badge">36개</span> · 숙어 <span class="badge">20개</span> · 문장 <span class="badge">32개</span></div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lesson-select-area" style="margin-top: 8px;">
+                    <h2 class="section-label">속담 / 관용어</h2>
+                    <div class="lesson-cards">
+                        <button class="lesson-card idiom-card" data-lesson="idioms" id="btn-idioms">
+                            <div class="lesson-number">🗣️ Idioms</div>
+                            <div class="lesson-title">Idioms & Expressions</div>
+                            <div class="lesson-meta">관용어 <span class="badge">20개</span> · 3가지 학습 모드</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mode-select-area" id="mode-select" style="display:none;">
+                    <h2 class="section-label">학습 모드</h2>
+                    <div class="mode-cards">
+                        <button class="mode-card red-team" id="btn-red-words">
+                            <div class="mode-icon">🎯</div>
+                            <div class="mode-name">RED TEAM</div>
+                            <div class="mode-desc">단어 테스트</div>
+                            <p class="mode-detail">영어 → 한글 뜻 맞추기<br>4지선다 퀴즈</p>
+                        </button>
+                        <button class="mode-card build-team" id="btn-build-words">
+                            <div class="mode-icon">🔨</div>
+                            <div class="mode-name">BUILD TEAM</div>
+                            <div class="mode-desc">단어 조립</div>
+                            <p class="mode-detail">한글 뜻 보고<br>영어 스펠링 입력</p>
+                        </button>
+                        <button class="mode-card red-team phrase" id="btn-red-phrases">
+                            <div class="mode-icon">🔗</div>
+                            <div class="mode-name">RED TEAM</div>
+                            <div class="mode-desc">숙어 테스트</div>
+                            <p class="mode-detail">영어 숙어 → 한글 뜻<br>4지선다 퀴즈</p>
+                        </button>
+                        <button class="mode-card build-team sentence" id="btn-build-sentences">
+                            <div class="mode-icon">📝</div>
+                            <div class="mode-name">BUILD TEAM</div>
+                            <div class="mode-desc">문장 빈칸</div>
+                            <p class="mode-detail">핵심 단어 빈칸 채우기<br>본문 문장 학습</p>
+                        </button>
+                        <button class="mode-card red-team sentence-mode" id="btn-red-sentences">
+                            <div class="mode-icon">📖</div>
+                            <div class="mode-name">RED TEAM</div>
+                            <div class="mode-desc">문장 해석</div>
+                            <p class="mode-detail">영어 문장 → 한글 해석<br>영한 해석 연습</p>
+                        </button>
+                        <button class="mode-card build-team scramble" id="btn-build-scramble">
+                            <div class="mode-icon">🧩</div>
+                            <div class="mode-name">BUILD TEAM</div>
+                            <div class="mode-desc">문장 배열</div>
+                            <p class="mode-detail">한글 해석 보고<br>영어 단어 순서 배열</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mode-select-area" id="idiom-mode-select" style="display:none;">
+                    <h2 class="section-label">속담 학습 모드</h2>
+                    <div class="mode-cards">
+                        <button class="mode-card red-team" id="btn-idiom-meaning">
+                            <div class="mode-icon">🎯</div>
+                            <div class="mode-name">RED TEAM</div>
+                            <div class="mode-desc">뜻 맞추기</div>
+                            <p class="mode-detail">영어 관용어 →<br>영어 뜻(Meaning) 고르기</p>
+                        </button>
+                        <button class="mode-card red-team" id="btn-idiom-korean">
+                            <div class="mode-icon">🇰🇷</div>
+                            <div class="mode-name">RED TEAM</div>
+                            <div class="mode-desc">우리말 뜻</div>
+                            <p class="mode-detail">영어 관용어 →<br>우리말 뜻 고르기</p>
+                        </button>
+                        <button class="mode-card build-team" id="btn-idiom-build">
+                            <div class="mode-icon">🔨</div>
+                            <div class="mode-name">BUILD TEAM</div>
+                            <div class="mode-desc">관용어 조립</div>
+                            <p class="mode-detail">우리말 뜻 보고<br>영어 관용어 입력</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ QUIZ SCREEN (RED TEAM - WORDS) ============ -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-quiz-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge red">RED TEAM</div>
+                    <div class="quiz-progress">
+                        <span id="quiz-current">1</span> / <span id="quiz-total">20</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="quiz-progress-bar"></div>
+                </div>
+
+                <div class="score-display">
+                    <div class="score-item correct">
+                        <span class="score-icon">✓</span>
+                        <span id="score-correct">0</span>
+                    </div>
+                    <div class="score-item wrong">
+                        <span class="score-icon">✗</span>
+                        <span id="score-wrong">0</span>
+                    </div>
+                </div>
+
+                <div class="question-card" id="question-card">
+                    <div class="question-type-label" id="question-type-label">단어</div>
+                    <div class="question-word" id="question-word">shampoo</div>
+                    <div class="question-hint" id="question-hint"></div>
+                </div>
+
+                <div class="options-grid" id="options-grid">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="feedback-area" id="feedback-area" style="display:none;">
+                    <div class="feedback-content" id="feedback-content"></div>
+                    <button class="btn-next" id="btn-next">다음 문제 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ BUILD SCREEN (BUILD TEAM - WORDS) ============ -->
+        <div id="screen-build" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-build-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge build">BUILD TEAM</div>
+                    <div class="quiz-progress">
+                        <span id="build-current">1</span> / <span id="build-total">20</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar build-bar" id="build-progress-bar"></div>
+                </div>
+
+                <div class="score-display">
+                    <div class="score-item correct">
+                        <span class="score-icon">✓</span>
+                        <span id="build-score-correct">0</span>
+                    </div>
+                    <div class="score-item wrong">
+                        <span class="score-icon">✗</span>
+                        <span id="build-score-wrong">0</span>
+                    </div>
+                </div>
+
+                <div class="question-card build-card">
+                    <div class="question-type-label" id="build-type-label">단어 조립</div>
+                    <div class="build-korean" id="build-korean">샴푸</div>
+                    <div class="build-pos" id="build-pos">n. 명사</div>
+                </div>
+
+                <div class="build-input-area">
+                    <div class="letter-display" id="letter-display">
+                        <!-- letter boxes dynamically -->
+                    </div>
+                    <input type="text" id="build-input" class="build-text-input" placeholder="영어 단어를 입력하세요..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <div class="build-actions">
+                        <button class="btn-hint-build" id="btn-hint-build">💡 힌트</button>
+                        <button class="btn-submit-build" id="btn-submit-build">확인</button>
+                    </div>
+                </div>
+
+                <div class="feedback-area" id="build-feedback-area" style="display:none;">
+                    <div class="feedback-content" id="build-feedback-content"></div>
+                    <button class="btn-next" id="btn-build-next">다음 문제 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SENTENCE FILL SCREEN (BUILD TEAM - SENTENCES) ============ -->
+        <div id="screen-sentence" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-sentence-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge build">BUILD TEAM</div>
+                    <div class="quiz-progress">
+                        <span id="sentence-current">1</span> / <span id="sentence-total">10</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar build-bar" id="sentence-progress-bar"></div>
+                </div>
+
+                <div class="score-display">
+                    <div class="score-item correct">
+                        <span class="score-icon">✓</span>
+                        <span id="sentence-score-correct">0</span>
+                    </div>
+                    <div class="score-item wrong">
+                        <span class="score-icon">✗</span>
+                        <span id="sentence-score-wrong">0</span>
+                    </div>
+                </div>
+
+                <div class="sentence-card" id="sentence-card">
+                    <div class="sentence-korean" id="sentence-korean"></div>
+                    <div class="sentence-english" id="sentence-english"></div>
+                </div>
+
+                <div class="build-input-area">
+                    <input type="text" id="sentence-input" class="build-text-input" placeholder="빈칸에 들어갈 단어를 입력하세요..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <div class="build-actions">
+                        <button class="btn-hint-build" id="btn-hint-sentence">💡 힌트</button>
+                        <button class="btn-submit-build" id="btn-submit-sentence">확인</button>
+                    </div>
+                </div>
+
+                <div class="feedback-area" id="sentence-feedback-area" style="display:none;">
+                    <div class="feedback-content" id="sentence-feedback-content"></div>
+                    <button class="btn-next" id="btn-sentence-next">다음 문제 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SENTENCE TRANSLATION SCREEN (RED TEAM - SENTENCES) ============ -->
+        <div id="screen-translate" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-translate-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge red">RED TEAM</div>
+                    <div class="quiz-progress">
+                        <span id="translate-current">1</span> / <span id="translate-total">10</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="translate-progress-bar"></div>
+                </div>
+
+                <div class="score-display">
+                    <div class="score-item correct">
+                        <span class="score-icon">✓</span>
+                        <span id="translate-score-correct">0</span>
+                    </div>
+                    <div class="score-item wrong">
+                        <span class="score-icon">✗</span>
+                        <span id="translate-score-wrong">0</span>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-type-label">문장 해석</div>
+                    <div class="translate-sentence" id="translate-sentence"></div>
+                </div>
+
+                <div class="options-grid" id="translate-options">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="feedback-area" id="translate-feedback-area" style="display:none;">
+                    <div class="feedback-content" id="translate-feedback-content"></div>
+                    <button class="btn-next" id="btn-translate-next">다음 문제 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SCRAMBLE SCREEN (BUILD TEAM - SENTENCE ARRANGE) ============ -->
+        <div id="screen-scramble" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-scramble-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge build">BUILD TEAM</div>
+                    <div class="quiz-progress">
+                        <span id="scramble-current">1</span> / <span id="scramble-total">10</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar build-bar" id="scramble-progress-bar"></div>
+                </div>
+
+                <div class="score-display">
+                    <div class="score-item correct">
+                        <span class="score-icon">✓</span>
+                        <span id="scramble-score-correct">0</span>
+                    </div>
+                    <div class="score-item wrong">
+                        <span class="score-icon">✗</span>
+                        <span id="scramble-score-wrong">0</span>
+                    </div>
+                </div>
+
+                <div class="sentence-card">
+                    <div class="sentence-korean" id="scramble-korean"></div>
+                </div>
+
+                <div class="scramble-area">
+                    <div class="assembled-words" id="assembled-words">
+                        <span class="placeholder-text">단어를 클릭하여 문장을 만드세요</span>
+                    </div>
+                    <div class="word-pool" id="word-pool">
+                        <!-- word chips -->
+                    </div>
+                    <div class="build-actions">
+                        <button class="btn-hint-build" id="btn-scramble-clear">🔄 초기화</button>
+                        <button class="btn-submit-build" id="btn-submit-scramble">확인</button>
+                    </div>
+                </div>
+
+                <div class="feedback-area" id="scramble-feedback-area" style="display:none;">
+                    <div class="feedback-content" id="scramble-feedback-content"></div>
+                    <button class="btn-next" id="btn-scramble-next">다음 문제 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ RESULT SCREEN ============ -->
+        <div id="screen-result" class="screen">
+            <div class="result-container">
+                <div class="result-emoji" id="result-emoji">🎉</div>
+                <h2 class="result-title" id="result-title">학습 완료!</h2>
+                <div class="result-score-circle">
+                    <svg viewBox="0 0 120 120" class="score-ring">
+                        <circle cx="60" cy="60" r="54" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="none"/>
+                        <circle cx="60" cy="60" r="54" id="score-ring-fill" stroke="url(#scoreGradient)" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" transform="rotate(-90 60 60)"/>
+                        <defs>
+                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#ff6b6b"/>
+                                <stop offset="100%" stop-color="#ffd93d"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="score-text">
+                        <span class="score-percent" id="result-percent">0</span>
+                        <span class="score-label">%</span>
+                    </div>
+                </div>
+                <div class="result-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="result-correct">0</span>
+                        <span class="stat-label">정답</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="result-wrong">0</span>
+                        <span class="stat-label">오답</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="result-total">0</span>
+                        <span class="stat-label">총 문제</span>
+                    </div>
+                </div>
+
+                <div class="wrong-review" id="wrong-review" style="display:none;">
+                    <h3 class="review-title">📋 오답 노트</h3>
+                    <div class="review-list" id="review-list"></div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn-retry" id="btn-retry">🔄 다시 풀기</button>
+                    <button class="btn-home" id="btn-home">🏠 홈으로</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
