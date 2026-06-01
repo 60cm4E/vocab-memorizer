@@ -1102,8 +1102,8 @@
             case 'idiom-build': startIdiomBuild(); break;
             case 'flashcard': startFlashcard(); break;
             case 'idiom-flashcard': state.lesson = 'idioms'; startFlashcard(); break;
-            case 'matching': startMatching(); break;
-            case 'idiom-matching': state.lesson = 'idioms'; startMatching(); break;
+            case 'matching': showMatchModeSelect(); break;
+            case 'idiom-matching': state.lesson = 'idioms'; showMatchModeSelect(); break;
             default: goHome();
         }
     });
@@ -1237,118 +1237,230 @@
     });
 
     // ============================================
-    // MATCHING GAME MODE
+    // MATCHING GAME MODE (Face-up, 3 sub-modes)
     // ============================================
-    let matchState = { cards: [], flipped: [], matched: 0, totalPairs: 0, moves: 0, timerInterval: null, seconds: 0, locked: false };
+    let matchState = {
+        allItems: [], cards: [], selected: null, matched: 0, totalPairs: 0,
+        moves: 0, timerInterval: null, seconds: 0, locked: false,
+        subMode: null, // 'practice', 'unlimited', 'timeattack'
+        roundItems: [], currentRound: 0, totalRounds: 0,
+        totalMatched: 0, totalMoves: 0, pairsPerRound: 5
+    };
 
-    function getMatchData() {
-        let items;
+    function getAllMatchItems() {
         if (state.lesson === 'idioms') {
-            items = DATA.idioms.items.map(item => ({ en: item.idiom, ko: item.ko }));
+            return DATA.idioms.items.map(item => ({ en: item.idiom, ko: item.ko }));
         } else {
-            items = DATA[state.lesson].words.map(w => ({ en: w.en, ko: w.ko }));
+            return DATA[state.lesson].words.map(w => ({ en: w.en, ko: w.ko }));
         }
-        // Pick 8 random pairs
-        const selected = shuffle(items).slice(0, 8);
-        const cards = [];
-        selected.forEach((item, idx) => {
-            cards.push({ id: idx, type: 'en', text: item.en, pairId: idx });
-            cards.push({ id: idx, type: 'ko', text: item.ko, pairId: idx });
-        });
-        return shuffle(cards);
     }
 
-    function startMatching() {
+    function showMatchModeSelect() {
         state.mode = state.lesson === 'idioms' ? 'idiom-matching' : 'matching';
-        matchState.cards = getMatchData();
-        matchState.flipped = [];
-        matchState.matched = 0;
-        matchState.totalPairs = 8;
-        matchState.moves = 0;
-        matchState.seconds = 0;
-        matchState.locked = true; // locked during preview
+        matchState.allItems = shuffle(getAllMatchItems());
 
-        document.getElementById('match-moves').textContent = '0';
-        document.getElementById('match-pairs').textContent = '0';
-        document.getElementById('match-total-pairs').textContent = '8';
-        document.getElementById('match-timer').textContent = '0:00';
-        document.getElementById('match-progress-bar').style.width = '0%';
+        // Show mode select, hide game
+        document.getElementById('match-mode-select').style.display = 'block';
+        document.getElementById('match-stats-header').style.display = 'none';
+        document.getElementById('match-progress-wrap').style.display = 'none';
+        document.getElementById('match-grid').style.display = 'none';
         document.getElementById('match-complete').style.display = 'none';
-        document.getElementById('match-grid').style.display = 'grid';
+        document.getElementById('match-round-info').style.display = 'none';
+        document.getElementById('match-count-select').style.display = 'none';
 
-        renderMatchGrid(true); // start revealed
         showScreen('screen-matching');
-
-        // Preview: show all cards for 3 seconds, then flip them over
-        setTimeout(() => {
-            const allCards = document.querySelectorAll('#match-grid .match-card');
-            allCards.forEach(c => c.classList.remove('revealed'));
-            matchState.locked = false;
-            startMatchTimer();
-        }, 3000);
     }
 
-    function renderMatchGrid(startRevealed) {
+    // Practice mode - show card count options
+    document.getElementById('btn-match-practice').addEventListener('click', () => {
+        const total = matchState.allItems.length;
+        const container = document.getElementById('match-count-btns');
+        container.innerHTML = '';
+
+        // Generate buttons in increments of 10 cards (5 pairs)
+        for (let n = 10; n <= total * 2; n += 10) {
+            const pairs = Math.min(Math.floor(n / 2), total);
+            if (pairs < 5) continue;
+            const btn = document.createElement('button');
+            btn.className = 'match-count-btn';
+            btn.textContent = (pairs * 2) + '장 (' + pairs + '쌍)';
+            btn.addEventListener('click', () => {
+                matchState.subMode = 'practice';
+                const selected = matchState.allItems.slice(0, pairs);
+                startMatchGame(selected);
+            });
+            container.appendChild(btn);
+            if (pairs >= total) break;
+        }
+
+        document.getElementById('match-count-select').style.display = 'block';
+        document.getElementById('match-count-select').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    // Unlimited mode
+    document.getElementById('btn-match-unlimited').addEventListener('click', () => {
+        matchState.subMode = 'unlimited';
+        startMatchGame(matchState.allItems);
+    });
+
+    // Time attack mode
+    document.getElementById('btn-match-timeattack').addEventListener('click', () => {
+        matchState.subMode = 'timeattack';
+        startMatchGame(matchState.allItems);
+    });
+
+    function startMatchGame(items) {
+        matchState.totalMoves = 0;
+        matchState.totalMatched = 0;
+        matchState.seconds = 0;
+
+        // Split into rounds of 10 cards (5 pairs) each
+        matchState.pairsPerRound = 5;
+        matchState.roundItems = [];
+        const shuffled = shuffle([...items]);
+        for (let i = 0; i < shuffled.length; i += matchState.pairsPerRound) {
+            matchState.roundItems.push(shuffled.slice(i, i + matchState.pairsPerRound));
+        }
+        matchState.currentRound = 0;
+        matchState.totalRounds = matchState.roundItems.length;
+
+        const totalPairsAll = items.length;
+        document.getElementById('match-total-pairs').textContent = totalPairsAll;
+
+        // Hide mode select, show game
+        document.getElementById('match-mode-select').style.display = 'none';
+        document.getElementById('match-stats-header').style.display = 'flex';
+        document.getElementById('match-progress-wrap').style.display = 'block';
+
+        startMatchTimer();
+        loadMatchRound();
+    }
+
+    function loadMatchRound() {
+        const roundData = matchState.roundItems[matchState.currentRound];
+        if (!roundData || roundData.length === 0) {
+            // All rounds done
+            stopMatchTimer();
+            showMatchComplete();
+            return;
+        }
+
+        matchState.cards = [];
+        roundData.forEach((item, idx) => {
+            matchState.cards.push({ type: 'en', text: item.en, pairId: idx });
+            matchState.cards.push({ type: 'ko', text: item.ko, pairId: idx });
+        });
+        matchState.cards = shuffle(matchState.cards);
+        matchState.matched = 0;
+        matchState.totalPairs = roundData.length;
+        matchState.selected = null;
+        matchState.locked = false;
+
+        // Update UI
+        document.getElementById('match-moves').textContent = matchState.totalMoves;
+        document.getElementById('match-pairs').textContent = matchState.totalMatched;
+        const totalAll = matchState.roundItems.reduce((s, r) => s + r.length, 0);
+        document.getElementById('match-progress-bar').style.width = ((matchState.totalMatched / totalAll) * 100) + '%';
+
+        // Round info
+        const roundInfo = document.getElementById('match-round-info');
+        if (matchState.totalRounds > 1) {
+            roundInfo.style.display = 'block';
+            document.getElementById('match-round-label').textContent =
+                'Round ' + (matchState.currentRound + 1) + ' / ' + matchState.totalRounds +
+                ' (' + roundData.length + '쌍)';
+        } else {
+            roundInfo.style.display = 'none';
+        }
+
+        document.getElementById('match-complete').style.display = 'none';
+        renderMatchGridFaceUp();
+    }
+
+    function renderMatchGridFaceUp() {
         const grid = document.getElementById('match-grid');
         grid.innerHTML = '';
+        grid.style.display = 'grid';
+
+        // Adjust columns based on card count
+        const count = matchState.cards.length;
+        if (count <= 6) grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        else if (count <= 8) grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+        else grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
 
         matchState.cards.forEach((card, i) => {
             const el = document.createElement('div');
-            el.className = 'match-card' + (startRevealed ? ' revealed' : '');
+            el.className = 'mcard';
             el.dataset.index = i;
-            el.innerHTML = `
-                <div class="match-card-inner">
-                    <div class="match-card-face match-card-back">?</div>
-                    <div class="match-card-face match-card-front">${card.text}</div>
-                </div>
-            `;
-            el.addEventListener('click', () => handleMatchClick(i, el));
+            el.innerHTML = `<span class="mcard-type">${card.type === 'en' ? 'EN' : 'KO'}</span>${card.text}`;
+            el.addEventListener('click', () => handleFaceUpClick(i, el));
             grid.appendChild(el);
         });
     }
 
-    function handleMatchClick(index, el) {
+    function handleFaceUpClick(index, el) {
         if (matchState.locked) return;
-        if (el.classList.contains('revealed') || el.classList.contains('matched')) return;
-        if (matchState.flipped.length >= 2) return;
+        if (el.classList.contains('matched')) return;
 
-        el.classList.add('revealed');
-        matchState.flipped.push({ index, el, card: matchState.cards[index] });
+        const card = matchState.cards[index];
 
-        if (matchState.flipped.length === 2) {
-            matchState.moves++;
-            document.getElementById('match-moves').textContent = matchState.moves;
+        if (matchState.selected === null) {
+            // First selection
+            matchState.selected = { index, el, card };
+            el.classList.add('selected');
+        } else if (matchState.selected.index === index) {
+            // Clicked same card - deselect
+            el.classList.remove('selected');
+            matchState.selected = null;
+        } else {
+            // Second selection
+            matchState.totalMoves++;
+            document.getElementById('match-moves').textContent = matchState.totalMoves;
 
-            const [a, b] = matchState.flipped;
-            if (a.card.pairId === b.card.pairId && a.card.type !== b.card.type) {
-                // Match!
+            const first = matchState.selected;
+            const second = { index, el, card };
+
+            if (first.card.pairId === second.card.pairId && first.card.type !== second.card.type) {
+                // Correct match!
                 matchState.matched++;
-                document.getElementById('match-pairs').textContent = matchState.matched;
-                document.getElementById('match-progress-bar').style.width = ((matchState.matched / matchState.totalPairs) * 100) + '%';
+                matchState.totalMatched++;
+                document.getElementById('match-pairs').textContent = matchState.totalMatched;
 
-                setTimeout(() => {
-                    a.el.classList.add('matched');
-                    b.el.classList.add('matched');
-                    matchState.flipped = [];
+                const totalAll = matchState.roundItems.reduce((s, r) => s + r.length, 0);
+                document.getElementById('match-progress-bar').style.width = ((matchState.totalMatched / totalAll) * 100) + '%';
 
-                    if (matchState.matched === matchState.totalPairs) {
-                        stopMatchTimer();
-                        showMatchComplete();
-                    }
-                }, 300);
+                first.el.classList.remove('selected');
+                first.el.classList.add('matched');
+                second.el.classList.add('matched');
+                matchState.selected = null;
+
+                // Check if round complete
+                if (matchState.matched >= matchState.totalPairs) {
+                    matchState.locked = true;
+                    setTimeout(() => {
+                        matchState.currentRound++;
+                        if (matchState.currentRound >= matchState.totalRounds) {
+                            stopMatchTimer();
+                            showMatchComplete();
+                        } else {
+                            loadMatchRound();
+                        }
+                    }, 600);
+                }
             } else {
-                // No match
+                // Wrong match
                 matchState.locked = true;
+                el.classList.add('selected');
                 setTimeout(() => {
-                    a.el.classList.add('wrong');
-                    b.el.classList.add('wrong');
-                }, 100);
+                    first.el.classList.add('wrong');
+                    el.classList.add('wrong');
+                }, 50);
                 setTimeout(() => {
-                    a.el.classList.remove('revealed', 'wrong');
-                    b.el.classList.remove('revealed', 'wrong');
-                    matchState.flipped = [];
+                    first.el.classList.remove('selected', 'wrong');
+                    el.classList.remove('selected', 'wrong');
+                    matchState.selected = null;
                     matchState.locked = false;
-                }, 1000);
+                }, 700);
             }
         }
     }
@@ -1373,26 +1485,40 @@
 
     function showMatchComplete() {
         document.getElementById('match-grid').style.display = 'none';
+        document.getElementById('match-round-info').style.display = 'none';
         document.getElementById('match-complete').style.display = 'block';
+
         const m = Math.floor(matchState.seconds / 60);
         const s = matchState.seconds % 60;
-        document.getElementById('mc-time').textContent = m + ':' + String(s).padStart(2, '0');
-        document.getElementById('mc-moves').textContent = matchState.moves;
-        document.getElementById('mc-pairs').textContent = matchState.matched;
+        const timeStr = m + ':' + String(s).padStart(2, '0');
+
+        document.getElementById('mc-time').textContent = timeStr;
+        document.getElementById('mc-moves').textContent = matchState.totalMoves;
+        document.getElementById('mc-pairs').textContent = matchState.totalMatched;
+
+        // Different titles for different modes
+        const titleEl = document.getElementById('match-complete-title');
+        if (matchState.subMode === 'timeattack') {
+            titleEl.textContent = '⚡ 타임어택 완료!';
+        } else if (matchState.subMode === 'unlimited') {
+            titleEl.textContent = '♾️ 무제한 연습 완료!';
+        } else {
+            titleEl.textContent = '📝 연습 완료!';
+        }
     }
 
     // Wire up matching buttons
     document.getElementById('btn-matching').addEventListener('click', () => {
         if (!state.lesson) return;
-        startMatching();
+        showMatchModeSelect();
     });
     document.getElementById('btn-idiom-matching').addEventListener('click', () => {
         state.lesson = 'idioms';
-        startMatching();
+        showMatchModeSelect();
     });
 
     document.getElementById('btn-match-retry').addEventListener('click', () => {
-        startMatching();
+        showMatchModeSelect();
     });
 
 })();

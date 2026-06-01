@@ -455,21 +455,61 @@
                         돌아가기
                     </button>
                     <div class="quiz-mode-badge" style="background:rgba(255,159,67,0.15);color:#ff9f43;border:1px solid rgba(255,159,67,0.2);">MATCHING</div>
-                    <div class="match-stats-header">
+                    <div class="match-stats-header" id="match-stats-header" style="display:none;">
                         <span>⏱ <span id="match-timer">0:00</span></span>
                         <span>🔄 <span id="match-moves">0</span></span>
                         <span>✅ <span id="match-pairs">0</span>/<span id="match-total-pairs">8</span></span>
                     </div>
                 </div>
-                <div class="progress-bar-container">
+
+                <!-- MODE SELECTOR -->
+                <div id="match-mode-select" class="match-mode-select">
+                    <h2 class="match-mode-title">매칭 모드 선택</h2>
+                    <div class="match-mode-options">
+                        <button class="match-mode-btn" id="btn-match-practice">
+                            <div class="mm-icon">📝</div>
+                            <div class="mm-name">연습 모드</div>
+                            <div class="mm-desc">카드 장수를 선택하여 연습</div>
+                        </button>
+                        <button class="match-mode-btn" id="btn-match-unlimited">
+                            <div class="mm-icon">♾️</div>
+                            <div class="mm-name">무제한 연습</div>
+                            <div class="mm-desc">모든 카드를 소진할 때까지</div>
+                        </button>
+                        <button class="match-mode-btn" id="btn-match-timeattack">
+                            <div class="mm-icon">⚡</div>
+                            <div class="mm-name">타임어택</div>
+                            <div class="mm-desc">최단 시간에 모든 카드 클리어</div>
+                        </button>
+                    </div>
+                    <!-- Practice card count selector -->
+                    <div id="match-count-select" class="match-count-select" style="display:none;">
+                        <h3 class="match-count-title">카드 장수 선택</h3>
+                        <div class="match-count-btns" id="match-count-btns">
+                            <!-- dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROUND INDICATOR -->
+                <div id="match-round-info" class="match-round-info" style="display:none;">
+                    <span id="match-round-label"></span>
+                </div>
+
+                <!-- PROGRESS BAR -->
+                <div class="progress-bar-container" id="match-progress-wrap" style="display:none;">
                     <div class="progress-bar" id="match-progress-bar" style="background:linear-gradient(135deg,#ff9f43,#ffd93d);"></div>
                 </div>
-                <div class="match-grid" id="match-grid">
+
+                <!-- GAME GRID -->
+                <div class="match-grid-faceup" id="match-grid" style="display:none;">
                     <!-- cards dynamically populated -->
                 </div>
+
+                <!-- COMPLETION -->
                 <div class="match-complete" id="match-complete" style="display:none;">
                     <div class="match-complete-emoji">🎉</div>
-                    <h2>매칭 완료!</h2>
+                    <h2 id="match-complete-title">매칭 완료!</h2>
                     <div class="match-complete-stats">
                         <div><strong id="mc-time">0:00</strong><br>시간</div>
                         <div><strong id="mc-moves">0</strong><br>시도</div>
