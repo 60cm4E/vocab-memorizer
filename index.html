@@ -102,6 +102,18 @@
                             <div class="mode-desc">문장 배열</div>
                             <p class="mode-detail">한글 해석 보고<br>영어 단어 순서 배열</p>
                         </button>
+                        <button class="mode-card" id="btn-flashcard" style="border-top: 3px solid var(--accent-purple);">
+                            <div class="mode-icon">🃏</div>
+                            <div class="mode-name" style="color: var(--accent-purple);">FLASH CARD</div>
+                            <div class="mode-desc">플래시 카드</div>
+                            <p class="mode-detail">카드를 뒤집어<br>단어를 암기하세요</p>
+                        </button>
+                        <button class="mode-card" id="btn-matching" style="border-top: 3px solid var(--accent-orange);">
+                            <div class="mode-icon">🧠</div>
+                            <div class="mode-name" style="color: var(--accent-orange);">MATCHING</div>
+                            <div class="mode-desc">매칭 게임</div>
+                            <p class="mode-detail">짝을 맞춰<br>기억력을 테스트</p>
+                        </button>
                     </div>
                 </div>
 
@@ -125,6 +137,18 @@
                             <div class="mode-name">BUILD TEAM</div>
                             <div class="mode-desc">관용어 조립</div>
                             <p class="mode-detail">우리말 뜻 보고<br>영어 관용어 입력</p>
+                        </button>
+                        <button class="mode-card" id="btn-idiom-flashcard" style="border-top: 3px solid var(--accent-purple);">
+                            <div class="mode-icon">🃏</div>
+                            <div class="mode-name" style="color: var(--accent-purple);">FLASH CARD</div>
+                            <div class="mode-desc">플래시 카드</div>
+                            <p class="mode-detail">카드를 뒤집어<br>관용어를 암기하세요</p>
+                        </button>
+                        <button class="mode-card" id="btn-idiom-matching" style="border-top: 3px solid var(--accent-orange);">
+                            <div class="mode-icon">🧠</div>
+                            <div class="mode-name" style="color: var(--accent-orange);">MATCHING</div>
+                            <div class="mode-desc">매칭 게임</div>
+                            <p class="mode-detail">짝을 맞춰<br>기억력을 테스트</p>
                         </button>
                     </div>
                 </div>
@@ -373,6 +397,88 @@
                 <div class="feedback-area" id="scramble-feedback-area" style="display:none;">
                     <div class="feedback-content" id="scramble-feedback-content"></div>
                     <button class="btn-next" id="btn-scramble-next">다음 문제 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ FLASH CARD SCREEN ============ -->
+        <div id="screen-flashcard" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-flashcard-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.2);">FLASH CARD</div>
+                    <div class="quiz-progress">
+                        <span id="fc-current">1</span> / <span id="fc-total">20</span>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="fc-progress-bar" style="background:linear-gradient(135deg,#a855f7,#c084fc);"></div>
+                </div>
+                <div class="fc-stats">
+                    <div class="fc-stat known"><span>✅</span> 알고 있어요 <strong id="fc-known">0</strong></div>
+                    <div class="fc-stat unknown"><span>❌</span> 모르겠어요 <strong id="fc-unknown">0</strong></div>
+                    <div class="fc-stat remaining"><span>📚</span> 남은 카드 <strong id="fc-remaining">0</strong></div>
+                </div>
+                <div class="flashcard-wrapper" id="flashcard-wrapper">
+                    <div class="flashcard" id="flashcard">
+                        <div class="flashcard-inner" id="flashcard-inner">
+                            <div class="flashcard-front">
+                                <div class="fc-label">영어</div>
+                                <div class="fc-word" id="fc-front-word"></div>
+                                <div class="fc-sub" id="fc-front-sub"></div>
+                                <div class="fc-tap-hint">탭하여 뒤집기</div>
+                            </div>
+                            <div class="flashcard-back">
+                                <div class="fc-label">뜻</div>
+                                <div class="fc-word" id="fc-back-word"></div>
+                                <div class="fc-sub" id="fc-back-sub"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="fc-actions">
+                    <button class="fc-btn fc-btn-unknown" id="fc-btn-unknown">❌ 모르겠어요</button>
+                    <button class="fc-btn fc-btn-known" id="fc-btn-known">✅ 알겠어요</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ MATCHING GAME SCREEN ============ -->
+        <div id="screen-matching" class="screen">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <button class="btn-back" id="btn-matching-back">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        돌아가기
+                    </button>
+                    <div class="quiz-mode-badge" style="background:rgba(255,159,67,0.15);color:#ff9f43;border:1px solid rgba(255,159,67,0.2);">MATCHING</div>
+                    <div class="match-stats-header">
+                        <span>⏱ <span id="match-timer">0:00</span></span>
+                        <span>🔄 <span id="match-moves">0</span></span>
+                        <span>✅ <span id="match-pairs">0</span>/<span id="match-total-pairs">8</span></span>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="match-progress-bar" style="background:linear-gradient(135deg,#ff9f43,#ffd93d);"></div>
+                </div>
+                <div class="match-grid" id="match-grid">
+                    <!-- cards dynamically populated -->
+                </div>
+                <div class="match-complete" id="match-complete" style="display:none;">
+                    <div class="match-complete-emoji">🎉</div>
+                    <h2>매칭 완료!</h2>
+                    <div class="match-complete-stats">
+                        <div><strong id="mc-time">0:00</strong><br>시간</div>
+                        <div><strong id="mc-moves">0</strong><br>시도</div>
+                        <div><strong id="mc-pairs">8</strong><br>매칭</div>
+                    </div>
+                    <div class="result-actions" style="margin-top:24px;">
+                        <button class="btn-retry" id="btn-match-retry">🔄 다시 하기</button>
+                        <button class="btn-home" id="btn-match-home">🏠 홈으로</button>
+                    </div>
                 </div>
             </div>
         </div>

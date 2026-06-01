@@ -82,6 +82,9 @@
     document.getElementById('btn-sentence-back').addEventListener('click', goHome);
     document.getElementById('btn-translate-back').addEventListener('click', goHome);
     document.getElementById('btn-scramble-back').addEventListener('click', goHome);
+    document.getElementById('btn-flashcard-back').addEventListener('click', goHome);
+    document.getElementById('btn-matching-back').addEventListener('click', () => { stopMatchTimer(); goHome(); });
+    document.getElementById('btn-match-home').addEventListener('click', () => { stopMatchTimer(); goHome(); });
     document.getElementById('btn-home').addEventListener('click', goHome);
 
     function goHome() {
@@ -1097,6 +1100,10 @@
             case 'idiom-meaning': startIdiomQuiz('meaning'); break;
             case 'idiom-korean': startIdiomQuiz('korean'); break;
             case 'idiom-build': startIdiomBuild(); break;
+            case 'flashcard': startFlashcard(); break;
+            case 'idiom-flashcard': state.lesson = 'idioms'; startFlashcard(); break;
+            case 'matching': startMatching(); break;
+            case 'idiom-matching': state.lesson = 'idioms'; startMatching(); break;
             default: goHome();
         }
     });
@@ -1124,6 +1131,261 @@
                 }
             }
         }
+    });
+
+    // ============================================
+    // FLASH CARD MODE
+    // ============================================
+    let fcState = { cards: [], currentIdx: 0, known: [], unknown: [] };
+
+    function getFlashcardData() {
+        if (state.lesson === 'idioms') {
+            return DATA.idioms.items.map(item => ({
+                front: item.idiom,
+                frontSub: '',
+                back: item.ko,
+                backSub: item.meaning
+            }));
+        } else {
+            return DATA[state.lesson].words.map(w => ({
+                front: w.en,
+                frontSub: w.pos || '',
+                back: w.ko,
+                backSub: ''
+            }));
+        }
+    }
+
+    function startFlashcard() {
+        fcState.cards = shuffle(getFlashcardData());
+        fcState.currentIdx = 0;
+        fcState.known = [];
+        fcState.unknown = [];
+        state.mode = state.lesson === 'idioms' ? 'idiom-flashcard' : 'flashcard';
+
+        document.getElementById('fc-total').textContent = fcState.cards.length;
+        showScreen('screen-flashcard');
+        renderFlashcard();
+    }
+
+    function renderFlashcard() {
+        if (fcState.cards.length === 0) {
+            // All done!
+            state.correct = fcState.known.length;
+            state.wrong = fcState.unknown.length;
+            state.wrongList = fcState.unknown.map(c => ({ en: c.front, ko: c.back }));
+            showResult();
+            return;
+        }
+
+        const card = fcState.cards[fcState.currentIdx];
+        document.getElementById('fc-current').textContent = fcState.known.length + fcState.unknown.length + 1;
+        document.getElementById('fc-total').textContent = fcState.known.length + fcState.unknown.length + fcState.cards.length;
+        document.getElementById('fc-known').textContent = fcState.known.length;
+        document.getElementById('fc-unknown').textContent = fcState.unknown.length;
+        document.getElementById('fc-remaining').textContent = fcState.cards.length;
+
+        const total = fcState.known.length + fcState.unknown.length + fcState.cards.length;
+        const progress = total > 0 ? ((fcState.known.length + fcState.unknown.length) / total) * 100 : 0;
+        document.getElementById('fc-progress-bar').style.width = progress + '%';
+
+        document.getElementById('fc-front-word').textContent = card.front;
+        document.getElementById('fc-front-sub').textContent = card.frontSub;
+        document.getElementById('fc-back-word').textContent = card.back;
+        document.getElementById('fc-back-sub').textContent = card.backSub;
+
+        // Reset flip
+        document.getElementById('flashcard').classList.remove('flipped');
+    }
+
+    // Flip card on click
+    document.getElementById('flashcard').addEventListener('click', () => {
+        document.getElementById('flashcard').classList.toggle('flipped');
+    });
+
+    // Known button
+    document.getElementById('fc-btn-known').addEventListener('click', () => {
+        const card = fcState.cards.splice(fcState.currentIdx, 1)[0];
+        fcState.known.push(card);
+        if (fcState.currentIdx >= fcState.cards.length) fcState.currentIdx = 0;
+        renderFlashcard();
+    });
+
+    // Unknown button
+    document.getElementById('fc-btn-unknown').addEventListener('click', () => {
+        const card = fcState.cards.splice(fcState.currentIdx, 1)[0];
+        fcState.unknown.push(card);
+        if (fcState.currentIdx >= fcState.cards.length) fcState.currentIdx = 0;
+
+        // If no cards left but there are unknowns, cycle them back
+        if (fcState.cards.length === 0 && fcState.unknown.length > 0) {
+            fcState.cards = shuffle(fcState.unknown);
+            fcState.unknown = [];
+            fcState.currentIdx = 0;
+        }
+        renderFlashcard();
+    });
+
+    // Wire up flashcard buttons
+    document.getElementById('btn-flashcard').addEventListener('click', () => {
+        if (!state.lesson) return;
+        startFlashcard();
+    });
+    document.getElementById('btn-idiom-flashcard').addEventListener('click', () => {
+        state.lesson = 'idioms';
+        startFlashcard();
+    });
+
+    // ============================================
+    // MATCHING GAME MODE
+    // ============================================
+    let matchState = { cards: [], flipped: [], matched: 0, totalPairs: 0, moves: 0, timerInterval: null, seconds: 0, locked: false };
+
+    function getMatchData() {
+        let items;
+        if (state.lesson === 'idioms') {
+            items = DATA.idioms.items.map(item => ({ en: item.idiom, ko: item.ko }));
+        } else {
+            items = DATA[state.lesson].words.map(w => ({ en: w.en, ko: w.ko }));
+        }
+        // Pick 8 random pairs
+        const selected = shuffle(items).slice(0, 8);
+        const cards = [];
+        selected.forEach((item, idx) => {
+            cards.push({ id: idx, type: 'en', text: item.en, pairId: idx });
+            cards.push({ id: idx, type: 'ko', text: item.ko, pairId: idx });
+        });
+        return shuffle(cards);
+    }
+
+    function startMatching() {
+        state.mode = state.lesson === 'idioms' ? 'idiom-matching' : 'matching';
+        matchState.cards = getMatchData();
+        matchState.flipped = [];
+        matchState.matched = 0;
+        matchState.totalPairs = 8;
+        matchState.moves = 0;
+        matchState.seconds = 0;
+        matchState.locked = false;
+
+        document.getElementById('match-moves').textContent = '0';
+        document.getElementById('match-pairs').textContent = '0';
+        document.getElementById('match-total-pairs').textContent = '8';
+        document.getElementById('match-timer').textContent = '0:00';
+        document.getElementById('match-progress-bar').style.width = '0%';
+        document.getElementById('match-complete').style.display = 'none';
+        document.getElementById('match-grid').style.display = 'grid';
+
+        renderMatchGrid();
+        startMatchTimer();
+        showScreen('screen-matching');
+    }
+
+    function renderMatchGrid() {
+        const grid = document.getElementById('match-grid');
+        grid.innerHTML = '';
+
+        matchState.cards.forEach((card, i) => {
+            const el = document.createElement('div');
+            el.className = 'match-card';
+            el.dataset.index = i;
+            el.innerHTML = `
+                <div class="match-card-inner">
+                    <div class="match-card-face match-card-back">?</div>
+                    <div class="match-card-face match-card-front">${card.text}</div>
+                </div>
+            `;
+            el.addEventListener('click', () => handleMatchClick(i, el));
+            grid.appendChild(el);
+        });
+    }
+
+    function handleMatchClick(index, el) {
+        if (matchState.locked) return;
+        if (el.classList.contains('revealed') || el.classList.contains('matched')) return;
+        if (matchState.flipped.length >= 2) return;
+
+        el.classList.add('revealed');
+        matchState.flipped.push({ index, el, card: matchState.cards[index] });
+
+        if (matchState.flipped.length === 2) {
+            matchState.moves++;
+            document.getElementById('match-moves').textContent = matchState.moves;
+
+            const [a, b] = matchState.flipped;
+            if (a.card.pairId === b.card.pairId && a.card.type !== b.card.type) {
+                // Match!
+                matchState.matched++;
+                document.getElementById('match-pairs').textContent = matchState.matched;
+                document.getElementById('match-progress-bar').style.width = ((matchState.matched / matchState.totalPairs) * 100) + '%';
+
+                setTimeout(() => {
+                    a.el.classList.add('matched');
+                    b.el.classList.add('matched');
+                    matchState.flipped = [];
+
+                    if (matchState.matched === matchState.totalPairs) {
+                        stopMatchTimer();
+                        showMatchComplete();
+                    }
+                }, 300);
+            } else {
+                // No match
+                matchState.locked = true;
+                setTimeout(() => {
+                    a.el.classList.add('wrong');
+                    b.el.classList.add('wrong');
+                }, 100);
+                setTimeout(() => {
+                    a.el.classList.remove('revealed', 'wrong');
+                    b.el.classList.remove('revealed', 'wrong');
+                    matchState.flipped = [];
+                    matchState.locked = false;
+                }, 1000);
+            }
+        }
+    }
+
+    function startMatchTimer() {
+        stopMatchTimer();
+        matchState.seconds = 0;
+        matchState.timerInterval = setInterval(() => {
+            matchState.seconds++;
+            const m = Math.floor(matchState.seconds / 60);
+            const s = matchState.seconds % 60;
+            document.getElementById('match-timer').textContent = m + ':' + String(s).padStart(2, '0');
+        }, 1000);
+    }
+
+    function stopMatchTimer() {
+        if (matchState.timerInterval) {
+            clearInterval(matchState.timerInterval);
+            matchState.timerInterval = null;
+        }
+    }
+
+    function showMatchComplete() {
+        document.getElementById('match-grid').style.display = 'none';
+        document.getElementById('match-complete').style.display = 'block';
+        const m = Math.floor(matchState.seconds / 60);
+        const s = matchState.seconds % 60;
+        document.getElementById('mc-time').textContent = m + ':' + String(s).padStart(2, '0');
+        document.getElementById('mc-moves').textContent = matchState.moves;
+        document.getElementById('mc-pairs').textContent = matchState.matched;
+    }
+
+    // Wire up matching buttons
+    document.getElementById('btn-matching').addEventListener('click', () => {
+        if (!state.lesson) return;
+        startMatching();
+    });
+    document.getElementById('btn-idiom-matching').addEventListener('click', () => {
+        state.lesson = 'idioms';
+        startMatching();
+    });
+
+    document.getElementById('btn-match-retry').addEventListener('click', () => {
+        startMatching();
     });
 
 })();
